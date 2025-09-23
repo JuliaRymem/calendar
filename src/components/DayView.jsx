@@ -101,7 +101,8 @@ import {
       window.addEventListener("mouseup", up);
     }
   
-    function onResizeStart(ev, edge, mdEvent) {
+    // mdEvent var oanvänd tidigare – ta bort den ur signaturen
+    function onResizeStart(ev, edge) {
       const rect = containerRef.current.getBoundingClientRect();
       const move = (mm) => {
         const yy = mm.clientY - rect.top;
@@ -182,7 +183,7 @@ import {
                   setOpen(true);
                 }}
                 onDragStart={(ev, md) => onDragStart(ev, md)}
-                onResizeStart={(ev, edge, md) => onResizeStart(ev, edge, md)}
+                onResizeStart={(ev, edge) => onResizeStart(ev, edge)}
               />
             ))}
           </div>

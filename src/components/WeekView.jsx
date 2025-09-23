@@ -62,7 +62,7 @@ import {
     const [editEvent, setEditEvent] = useState(null);
   
     const containerRefs = useRef({});
-    const [draft, setDraft] = useState(null);
+    const draftRef = useRef(null); // <- ref istället för state
   
     // --- skapa via drag ---
     function beginCreate(dayIndex, e) {
@@ -71,44 +71,40 @@ import {
       const y = e.clientY - rect.top - 28;
       const base = days[dayIndex];
       const start = yToDate(base, Math.max(0, Math.min(y, 24 * HOUR_PX)));
-      setDraft({
+      draftRef.current = {
         dayIndex,
         start,
         end: new Date(start),
         color: "#6366f1",
         label: "Övrigt",
-      });
+      };
       window.addEventListener("mousemove", dragCreate);
       window.addEventListener("mouseup", endCreate);
     }
     function dragCreate(e) {
-      setDraft((d) => {
-        if (!d) return d;
-        const col = containerRefs.current[d.dayIndex];
-        const rect = col.getBoundingClientRect();
-        const y = e.clientY - rect.top - 28;
-        const end = yToDate(days[d.dayIndex], Math.max(0, Math.min(y, 24 * HOUR_PX)));
-        return { ...d, end };
-      });
+      const d = draftRef.current;
+      if (!d) return;
+      const col = containerRefs.current[d.dayIndex];
+      const rect = col.getBoundingClientRect();
+      const y = e.clientY - rect.top - 28;
+      d.end = yToDate(days[d.dayIndex], Math.max(0, Math.min(y, 24 * HOUR_PX)));
     }
     function endCreate() {
       window.removeEventListener("mousemove", dragCreate);
       window.removeEventListener("mouseup", endCreate);
-      setDraft((d) => {
-        if (!d) return null;
-        let [s, e] = d.start <= d.end ? [d.start, d.end] : [d.end, d.start];
-        if (s.getTime() === e.getTime())
-          e = new Date(s.getTime() + SNAP_MIN * 60000);
-        addEvent({
-          title: "Ny händelse",
-          allDay: false,
-          start: s.toISOString(),
-          end: e.toISOString(),
-          color: d.color,
-          label: d.label,
-        });
-        return null;
+      const d = draftRef.current;
+      if (!d) return;
+      let [s, e] = d.start <= d.end ? [d.start, d.end] : [d.end, d.start];
+      if (s.getTime() === e.getTime()) e = new Date(s.getTime() + SNAP_MIN * 60000);
+      addEvent({
+        title: "Ny händelse",
+        allDay: false,
+        start: s.toISOString(),
+        end: e.toISOString(),
+        color: d.color,
+        label: d.label,
       });
+      draftRef.current = null;
     }
   
     // --- drag/resize ---
@@ -154,12 +150,8 @@ import {
         const start0 = yToDate(base, s.startY - s.rectTop - 28);
         const deltaMin = (current - start0) / 60000;
         updateEvent(s.id, {
-          start: new Date(
-            s.baseStart.getTime() + deltaMin * 60000
-          ).toISOString(),
-          end: new Date(
-            s.baseEnd.getTime() + deltaMin * 60000
-          ).toISOString(),
+          start: new Date(s.baseStart.getTime() + deltaMin * 60000).toISOString(),
+          end: new Date(s.baseEnd.getTime() + deltaMin * 60000).toISOString(),
         });
       } else if (s.type === "start") {
         if (current < s.baseEnd) updateEvent(s.id, { start: current.toISOString() });
@@ -213,10 +205,7 @@ import {
                     <span
                       key={e.id}
                       className="rounded-full border px-2 py-0.5 text-[10px]"
-                      style={{
-                        borderColor: `${e.color}80`,
-                        background: `${e.color}1f`,
-                      }}
+                      style={{ borderColor: `${e.color}80`, background: `${e.color}1f` }}
                     >
                       {e.title}
                     </span>
@@ -225,30 +214,19 @@ import {
               )}
   
               {Array.from({ length: 24 }, (_, h) => (
-                <div
-                  key={h}
-                  className="h-16 border-b border-gray-200 dark:border-zinc-800"
-                />
+                <div key={h} className="h-16 border-b border-gray-200 dark:border-zinc-800" />
               ))}
   
-              <div
-                className="pointer-events-none absolute left-0 right-0 top-[28px]"
-                style={{ height: 24 * HOUR_PX }}
-              >
+              <div className="pointer-events-none absolute left-0 right-0 top-[28px]" style={{ height: 24 * HOUR_PX }}>
                 {timed.map((e) => (
                   <EventBlock
                     key={e.id}
                     event={e}
                     lane={e.lane}
                     lanes={e.lanes}
-                    onEdit={(ev) => {
-                      setEditEvent(ev);
-                      setOpen(true);
-                    }}
+                    onEdit={(ev) => { setEditEvent(ev); setOpen(true); }}
                     onDragStart={(ev, mdEvent) => onBlockDragStart(ev, mdEvent, idx)}
-                    onResizeStart={(ev, edge, mdEvent) =>
-                      onBlockResizeStart(ev, edge, mdEvent, idx)
-                    }
+                    onResizeStart={(ev, edge, mdEvent) => onBlockResizeStart(ev, edge, mdEvent, idx)}
                   />
                 ))}
               </div>
@@ -257,11 +235,7 @@ import {
         })}
   
         <NowLine />
-        <EventModal
-          open={open}
-          onClose={() => setOpen(false)}
-          editEvent={editEvent}
-        />
+        <EventModal open={open} onClose={() => setOpen(false)} editEvent={editEvent} />
       </div>
     );
   }

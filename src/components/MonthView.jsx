@@ -18,8 +18,6 @@ import { sv } from "date-fns/locale";
 import { useCalendar } from "../context/CalendarContext";
 import { useEvents } from "../context/EventsContext";
 import { useLabels } from "../context/LabelsContext";
-import { useState } from "react";
-import EventModal from "./EventModal";
 
 function overlapsDay(evt, day) {
   const s = parseISO(evt.start);
@@ -40,9 +38,6 @@ export default function MonthView() {
   const { events } = useEvents();
   const { mapById } = useLabels();
 
-  const [open, setOpen] = useState(false);
-  const [editEvent, setEditEvent] = useState(null);
-
   const monthStart = startOfMonth(viewCursor);
   const monthEnd = endOfMonth(viewCursor);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
@@ -61,7 +56,6 @@ export default function MonthView() {
 
   return (
     <div className="rounded-xl border overflow-hidden">
-      {/* Rubrikrad */}
       <div
         className={`grid ${
           showWeekNumbers
@@ -77,7 +71,6 @@ export default function MonthView() {
         ))}
       </div>
 
-      {/* Veckorader */}
       <div className="divide-y border-t text-sm">
         {weeks.map((week, wi) => {
           const weekNumber = getISOWeek(week[0]);
@@ -125,7 +118,6 @@ export default function MonthView() {
                     }`}
                     onClick={() => setSelectedDate(day)}
                   >
-                    {/* Datum */}
                     <div className="mb-1 text-right text-xs">
                       <span
                         className={`inline-block rounded px-1 ${
@@ -140,7 +132,6 @@ export default function MonthView() {
                       </span>
                     </div>
 
-                    {/* Etikettprickar */}
                     <div className="flex flex-wrap gap-1">
                       {labels.slice(0, 4).map(([name, color]) => (
                         <span
@@ -153,10 +144,7 @@ export default function MonthView() {
                       {labels.length > 4 && (
                         <span
                           className="text-[10px] text-gray-500"
-                          title={labels
-                            .slice(4)
-                            .map(([name]) => name)
-                            .join(", ")}
+                          title={labels.slice(4).map(([name]) => name).join(", ")}
                         >
                           +{labels.length - 4}
                         </span>
@@ -169,12 +157,6 @@ export default function MonthView() {
           );
         })}
       </div>
-
-      <EventModal
-        open={open}
-        onClose={() => setOpen(false)}
-        editEvent={editEvent}
-      />
     </div>
   );
 }

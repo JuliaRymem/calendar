@@ -11,11 +11,11 @@ function uuid() {
 }
 
 const DEFAULT_LABELS = [
-  { id: uuid(), name: "Jobb",        color: "#2563eb" }, // blue-600
-  { id: uuid(), name: "Träning",     color: "#16a34a" }, // green-600
-  { id: uuid(), name: "Skola/Plugg", color: "#9333ea" }, // purple-600
-  { id: uuid(), name: "Familj",      color: "#ea580c" }, // orange-600
-  { id: uuid(), name: "Hälsa",       color: "#dc2626" }, // red-600
+  { id: uuid(), name: "Jobb",        color: "#2563eb" },
+  { id: uuid(), name: "Träning",     color: "#16a34a" },
+  { id: uuid(), name: "Skola/Plugg", color: "#9333ea" },
+  { id: uuid(), name: "Familj",      color: "#ea580c" },
+  { id: uuid(), name: "Hälsa",       color: "#dc2626" },
 ];
 
 export function LabelsProvider({ children }) {
@@ -26,12 +26,20 @@ export function LabelsProvider({ children }) {
         const arr = JSON.parse(raw);
         return Array.isArray(arr) && arr.length ? arr : DEFAULT_LABELS;
       }
-    } catch {}
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Couldn't load labels from localStorage:", err);
+    }
     return DEFAULT_LABELS;
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(labels));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(labels));
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn("Couldn't save labels to localStorage:", err);
+    }
   }, [labels]);
 
   const addLabel = (name, color) => {
