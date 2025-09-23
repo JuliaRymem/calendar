@@ -1,3 +1,4 @@
+// Varje timrad är 64px hög (se HOUR_PX), så totalhöjd = 24 * 64
 import { useEffect, useState } from "react";
 
 export default function TimeGrid() {
