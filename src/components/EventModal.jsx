@@ -11,13 +11,15 @@ export default function EventModal({ open, onClose, editEvent = null }) {
   const defaults = useMemo(() => {
     const base = selectedDate || new Date();
     return {
-      title: "",
-      allDay: false,
-      date: format(base, "yyyy-MM-dd"),
-      startTime: "09:00",
-      endTime: "10:00",
-      notes: "",
-    };
+        title: "",
+        allDay: false,
+        date: format(base, "yyyy-MM-dd"),
+        startTime: "09:00",
+        endTime: "10:00",
+        notes: "",
+        label: "Övrigt",
+        color: "#6366f1", // indigo
+      };
   }, [selectedDate]);
 
   const [form, setForm] = useState(defaults);
@@ -33,6 +35,8 @@ export default function EventModal({ open, onClose, editEvent = null }) {
         startTime: format(s, "HH:mm"),
         endTime: format(e, "HH:mm"),
         notes: editEvent.notes || "",
+        label: editEvent.label || "Övrigt",
+        color: editEvent.color || "#6366f1",
       });
     } else {
       setForm(defaults);
@@ -56,6 +60,8 @@ export default function EventModal({ open, onClose, editEvent = null }) {
       start: form.allDay ? toISO(form.date, "00:00") : toISO(form.date, form.startTime || "09:00"),
       end: form.allDay ? toISO(form.date, "23:59") : toISO(form.date, form.endTime || "10:00"),
       notes: form.notes.trim(),
+      label: form.label,
+    color: form.color,
     };
     if (!payload.title) return;
 
@@ -117,7 +123,26 @@ export default function EventModal({ open, onClose, editEvent = null }) {
             Heldag
           </label>
         </div>
-
+        <div className="mb-2 grid grid-cols-2 gap-2">
+  <label className="block text-sm">
+    Etikett
+    <input
+      className="mt-1 w-full rounded-md border px-3 py-2"
+      value={form.label}
+      onChange={(e) => setForm({ ...form, label: e.target.value })}
+      placeholder="t.ex. Jobb, Privat"
+    />
+  </label>
+  <label className="block text-sm">
+    Färg
+    <input
+      type="color"
+      className="mt-1 h-10 w-full rounded-md border px-1 py-1"
+      value={form.color}
+      onChange={(e) => setForm({ ...form, color: e.target.value })}
+    />
+  </label>
+</div>
         {!form.allDay && (
           <div className="mb-2 grid grid-cols-2 gap-2">
             <label className="block text-sm">
