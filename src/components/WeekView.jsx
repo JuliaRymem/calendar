@@ -17,6 +17,7 @@ import {
   import { HOUR_PX, yToDate, SNAP_MIN } from "../utils/layout";
   import { useRef, useState } from "react";
   import EventModal from "./EventModal";
+  import ViewToolbar from "./ViewToolbar";
   
   function overlapsDay(evt, day) {
     const s = parseISO(evt.start);
@@ -53,7 +54,7 @@ import {
   }
   
   export default function WeekView() {
-    const { viewCursor, filterLabelId } = useCalendar();
+    const { viewCursor, setViewCursor, filterLabelId } = useCalendar();
     const { events, addEvent, updateEvent } = useEvents();
     const weekStart = startOfWeek(viewCursor, { weekStartsOn: 1, locale: sv });
     const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -62,7 +63,7 @@ import {
     const [editEvent, setEditEvent] = useState(null);
   
     const containerRefs = useRef({});
-    const draftRef = useRef(null); // <- ref istället för state
+    const draftRef = useRef(null);
   
     // --- skapa via drag ---
     function beginCreate(dayIndex, e) {
@@ -166,73 +167,78 @@ import {
     }
   
     return (
-      <div className="relative grid grid-cols-[auto_repeat(7,minmax(0,1fr))] rounded-xl border overflow-hidden">
-        <TimeGrid />
+      <div className="relative rounded-xl border overflow-hidden">
+        {/* Mobil verktygsrad: Idag + filter */}
+        <ViewToolbar onToday={() => setViewCursor(new Date())} />
   
-        {days.map((day, idx) => {
-          const isToday = isSameDay(day, new Date());
-          const filtered = events.filter((e) =>
-            !filterLabelId ? true : e.labelId === filterLabelId
-          );
-          const allDay = filtered.filter((e) => e.allDay && overlapsDay(e, day));
-          const timedRaw = filtered
-            .filter((e) => !e.allDay && overlapsDay(e, day))
-            .sort((a, b) => (a.start < b.start ? -1 : 1));
-          const timed = layoutLanes(timedRaw);
+        <div className="grid grid-cols-[auto_repeat(7,minmax(0,1fr))]">
+          <TimeGrid />
   
-          return (
-            <div
-              key={day}
-              ref={(el) => (containerRefs.current[idx] = el)}
-              className={`relative border-l border-gray-200 dark:border-zinc-800 ${
-                isToday ? "bg-red-50 dark:bg-red-900/20" : ""
-              }`}
-              onMouseDown={(e) => beginCreate(idx, e)}
-            >
+          {days.map((day, idx) => {
+            const isToday = isSameDay(day, new Date());
+            const filtered = events.filter((e) =>
+              !filterLabelId ? true : e.labelId === filterLabelId
+            );
+            const allDay = filtered.filter((e) => e.allDay && overlapsDay(e, day));
+            const timedRaw = filtered
+              .filter((e) => !e.allDay && overlapsDay(e, day))
+              .sort((a, b) => (a.start < b.start ? -1 : 1));
+            const timed = layoutLanes(timedRaw);
+  
+            return (
               <div
-                className={`sticky top-0 z-20 px-2 py-1 text-center text-sm font-medium ${
-                  isToday
-                    ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                    : "bg-white dark:bg-zinc-900"
+                key={day}
+                ref={(el) => (containerRefs.current[idx] = el)}
+                className={`relative border-l border-gray-200 dark:border-zinc-800 ${
+                  isToday ? "bg-red-50 dark:bg-red-900/20" : ""
                 }`}
+                onMouseDown={(e) => beginCreate(idx, e)}
               >
-                {format(day, "EEE d", { locale: sv })}
-              </div>
+                <div
+                  className={`sticky top-0 z-20 px-2 py-1 text-center text-sm font-medium ${
+                    isToday
+                      ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                      : "bg-white dark:bg-zinc-900"
+                  }`}
+                >
+                  {format(day, "EEE d", { locale: sv })}
+                </div>
   
-              {allDay.length > 0 && (
-                <div className="sticky top-7 z-10 flex flex-wrap gap-1 bg-white px-2 py-1 dark:bg-zinc-900">
-                  {allDay.map((e) => (
-                    <span
+                {allDay.length > 0 && (
+                  <div className="sticky top-7 z-10 flex flex-wrap gap-1 bg-white px-2 py-1 dark:bg-zinc-900">
+                    {allDay.map((e) => (
+                      <span
+                        key={e.id}
+                        className="rounded-full border px-2 py-0.5 text-[10px]"
+                        style={{ borderColor: `${e.color}80`, background: `${e.color}1f` }}
+                      >
+                        {e.title}
+                      </span>
+                    ))}
+                  </div>
+                )}
+  
+                {Array.from({ length: 24 }, (_, h) => (
+                  <div key={h} className="h-16 border-b border-gray-200 dark:border-zinc-800" />
+                ))}
+  
+                <div className="pointer-events-none absolute left-0 right-0 top-[28px]" style={{ height: 24 * HOUR_PX }}>
+                  {timed.map((e) => (
+                    <EventBlock
                       key={e.id}
-                      className="rounded-full border px-2 py-0.5 text-[10px]"
-                      style={{ borderColor: `${e.color}80`, background: `${e.color}1f` }}
-                    >
-                      {e.title}
-                    </span>
+                      event={e}
+                      lane={e.lane}
+                      lanes={e.lanes}
+                      onEdit={(ev) => { setEditEvent(ev); setOpen(true); }}
+                      onDragStart={(ev, mdEvent) => onBlockDragStart(ev, mdEvent, idx)}
+                      onResizeStart={(ev, edge, mdEvent) => onBlockResizeStart(ev, edge, mdEvent, idx)}
+                    />
                   ))}
                 </div>
-              )}
-  
-              {Array.from({ length: 24 }, (_, h) => (
-                <div key={h} className="h-16 border-b border-gray-200 dark:border-zinc-800" />
-              ))}
-  
-              <div className="pointer-events-none absolute left-0 right-0 top-[28px]" style={{ height: 24 * HOUR_PX }}>
-                {timed.map((e) => (
-                  <EventBlock
-                    key={e.id}
-                    event={e}
-                    lane={e.lane}
-                    lanes={e.lanes}
-                    onEdit={(ev) => { setEditEvent(ev); setOpen(true); }}
-                    onDragStart={(ev, mdEvent) => onBlockDragStart(ev, mdEvent, idx)}
-                    onResizeStart={(ev, edge, mdEvent) => onBlockResizeStart(ev, edge, mdEvent, idx)}
-                  />
-                ))}
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
   
         <NowLine />
         <EventModal open={open} onClose={() => setOpen(false)} editEvent={editEvent} />
