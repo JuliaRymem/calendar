@@ -54,7 +54,6 @@ export default function MonthView() {
     d = addDays(d, 1);
   }
 
-  // veckogrupper för att kunna rendera radvis
   const weeks = [];
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7));
@@ -99,13 +98,14 @@ export default function MonthView() {
 
               {week.map((day, i) => {
                 const inMonth = isSameMonth(day, monthStart);
+                const isToday = isSameDay(day, new Date());
+
                 const dayEvents = events.filter(
                   (e) =>
                     (!filterLabelId ? true : e.labelId === filterLabelId) &&
                     overlapsDay(e, day)
                 );
 
-                // plocka unika etiketter
                 const labelSet = new Map();
                 dayEvents.forEach((e) => {
                   const lab = e.labelId ? mapById.get(e.labelId) : null;
@@ -126,14 +126,18 @@ export default function MonthView() {
                     onClick={() => setSelectedDate(day)}
                   >
                     {/* Datum */}
-                    <div
-                      className={`mb-1 text-right text-xs ${
-                        isSameDay(day, selectedDate)
-                          ? "rounded bg-indigo-500 px-1 text-white"
-                          : ""
-                      }`}
-                    >
-                      {format(day, "d", { locale: sv })}
+                    <div className="mb-1 text-right text-xs">
+                      <span
+                        className={`inline-block rounded px-1 ${
+                          isToday
+                            ? "bg-red-500 text-white"
+                            : isSameDay(day, selectedDate)
+                            ? "bg-indigo-500 text-white"
+                            : ""
+                        }`}
+                      >
+                        {format(day, "d", { locale: sv })}
+                      </span>
                     </div>
 
                     {/* Etikettprickar */}
@@ -143,7 +147,7 @@ export default function MonthView() {
                           key={name}
                           className="h-2 w-2 rounded-full"
                           style={{ background: color }}
-                          title={name} // tooltip!
+                          title={name}
                         />
                       ))}
                       {labels.length > 4 && (
