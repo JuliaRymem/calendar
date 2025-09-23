@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { CalendarProvider, useCalendar } from "./context/CalendarContext";
+import { EventsProvider } from "./context/EventsContext";
 import CalendarShell from "./components/CalendarShell";
 
 function ThemeRoot({ children }) {
@@ -23,9 +24,11 @@ export default function App() {
   return (
     <div className="min-h-dvh bg-gray-100 p-4 dark:bg-black">
       <CalendarProvider>
-        <ThemeRoot>
-          <CalendarShell />
-        </ThemeRoot>
+        <EventsProvider>
+          <ThemeRoot>
+            <CalendarShell />
+          </ThemeRoot>
+        </EventsProvider>
       </CalendarProvider>
     </div>
   );
