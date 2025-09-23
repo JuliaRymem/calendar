@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCalendar } from "../context/CalendarContext";
 import { useEvents } from "../context/EventsContext";
-import { format, set } from "date-fns";
-import { sv } from "date-fns/locale";
+import { format } from "date-fns";
 
 export default function EventModal({ open, onClose, editEvent = null }) {
   const { selectedDate } = useCalendar();
@@ -11,8 +10,6 @@ export default function EventModal({ open, onClose, editEvent = null }) {
   // Förifyll värden
   const defaults = useMemo(() => {
     const base = selectedDate || new Date();
-    const start = set(base, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
-    const end = set(base, { hours: 10, minutes: 0, seconds: 0, milliseconds: 0 });
     return {
       title: "",
       allDay: false,
@@ -56,21 +53,15 @@ export default function EventModal({ open, onClose, editEvent = null }) {
     const payload = {
       title: form.title.trim(),
       allDay: form.allDay,
-      start: form.allDay
-        ? toISO(form.date, "00:00")
-        : toISO(form.date, form.startTime || "09:00"),
-      end: form.allDay
-        ? toISO(form.date, "23:59")
-        : toISO(form.date, form.endTime || "10:00"),
+      start: form.allDay ? toISO(form.date, "00:00") : toISO(form.date, form.startTime || "09:00"),
+      end: form.allDay ? toISO(form.date, "23:59") : toISO(form.date, form.endTime || "10:00"),
       notes: form.notes.trim(),
     };
     if (!payload.title) return;
 
-    if (editEvent?.id) {
-      updateEvent(editEvent.id, payload);
-    } else {
-      addEvent(payload);
-    }
+    if (editEvent?.id) updateEvent(editEvent.id, payload);
+    else addEvent(payload);
+
     onClose();
   }
 
