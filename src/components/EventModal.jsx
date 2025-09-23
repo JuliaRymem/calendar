@@ -1,28 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
 import { useCalendar } from "../context/CalendarContext";
 import { useEvents } from "../context/EventsContext";
+import { useLabels } from "../context/LabelsContext";
 import { format } from "date-fns";
 
 export default function EventModal({ open, onClose, editEvent = null }) {
   const { selectedDate } = useCalendar();
   const { addEvent, updateEvent, deleteEvent } = useEvents();
+  const { labels, addLabel, mapById } = useLabels();
 
-  // Förifyll värden
   const defaults = useMemo(() => {
     const base = selectedDate || new Date();
+    const first = labels[0]; // default label
     return {
-        title: "",
-        allDay: false,
-        date: format(base, "yyyy-MM-dd"),
-        startTime: "09:00",
-        endTime: "10:00",
-        notes: "",
-        label: "Övrigt",
-        color: "#6366f1", // indigo
-      };
-  }, [selectedDate]);
+      title: "",
+      allDay: false,
+      date: format(base, "yyyy-MM-dd"),
+      startTime: "09:00",
+      endTime: "10:00",
+      notes: "",
+      labelId: first?.id ?? null,
+    };
+  }, [selectedDate, labels]);
 
   const [form, setForm] = useState(defaults);
+  const [creatingLabel, setCreatingLabel] = useState(false);
+  const [newLabel, setNewLabel] = useState({ name: "", color: "#6366f1" });
 
   useEffect(() => {
     if (editEvent) {
@@ -35,8 +38,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
         startTime: format(s, "HH:mm"),
         endTime: format(e, "HH:mm"),
         notes: editEvent.notes || "",
-        label: editEvent.label || "Övrigt",
-        color: editEvent.color || "#6366f1",
+        labelId: editEvent.labelId || null,
       });
     } else {
       setForm(defaults);
@@ -54,14 +56,17 @@ export default function EventModal({ open, onClose, editEvent = null }) {
 
   function handleSubmit(e) {
     e.preventDefault();
+    const labelObj = form.labelId ? mapById.get(form.labelId) : null;
     const payload = {
       title: form.title.trim(),
       allDay: form.allDay,
       start: form.allDay ? toISO(form.date, "00:00") : toISO(form.date, form.startTime || "09:00"),
       end: form.allDay ? toISO(form.date, "23:59") : toISO(form.date, form.endTime || "10:00"),
       notes: form.notes.trim(),
-      label: form.label,
-    color: form.color,
+      labelId: labelObj?.id ?? null,
+      // fallback för äldre renderingar:
+      label: labelObj?.name ?? "Övrigt",
+      color: labelObj?.color ?? "#6366f1",
     };
     if (!payload.title) return;
 
@@ -71,11 +76,12 @@ export default function EventModal({ open, onClose, editEvent = null }) {
     onClose();
   }
 
-  function handleDelete() {
-    if (editEvent?.id) {
-      deleteEvent(editEvent.id);
-      onClose();
-    }
+  function createInlineLabel() {
+    if (!newLabel.name.trim()) return;
+    const l = addLabel(newLabel.name, newLabel.color);
+    setForm((f) => ({ ...f, labelId: l.id }));
+    setCreatingLabel(false);
+    setNewLabel({ name: "", color: "#6366f1" });
   }
 
   return (
@@ -84,10 +90,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
       role="dialog" aria-modal="true"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-xl border bg-white p-4 shadow-lg dark:bg-zinc-900"
-      >
+      <form onSubmit={handleSubmit} className="w-full max-w-md rounded-xl border bg-white p-4 shadow-lg dark:bg-zinc-900">
         <div className="mb-3 text-lg font-semibold">
           {editEvent ? "Redigera händelse" : "Ny händelse"}
         </div>
@@ -98,7 +101,6 @@ export default function EventModal({ open, onClose, editEvent = null }) {
             className="mt-1 w-full rounded-md border px-3 py-2"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            placeholder="Vad händer?"
             required
           />
         </label>
@@ -123,26 +125,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
             Heldag
           </label>
         </div>
-        <div className="mb-2 grid grid-cols-2 gap-2">
-  <label className="block text-sm">
-    Etikett
-    <input
-      className="mt-1 w-full rounded-md border px-3 py-2"
-      value={form.label}
-      onChange={(e) => setForm({ ...form, label: e.target.value })}
-      placeholder="t.ex. Jobb, Privat"
-    />
-  </label>
-  <label className="block text-sm">
-    Färg
-    <input
-      type="color"
-      className="mt-1 h-10 w-full rounded-md border px-1 py-1"
-      value={form.color}
-      onChange={(e) => setForm({ ...form, color: e.target.value })}
-    />
-  </label>
-</div>
+
         {!form.allDay && (
           <div className="mb-2 grid grid-cols-2 gap-2">
             <label className="block text-sm">
@@ -168,6 +151,62 @@ export default function EventModal({ open, onClose, editEvent = null }) {
           </div>
         )}
 
+        {/* Etikett-väljare */}
+        {!creatingLabel ? (
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <label className="block text-sm">
+              Etikett
+              <select
+                className="mt-1 w-full rounded-md border px-3 py-2"
+                value={form.labelId ?? ""}
+                onChange={(e) => setForm({ ...form, labelId: e.target.value || null })}
+              >
+                {labels.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+            </label>
+            <div className="flex items-end">
+              <button
+                type="button"
+                className="w-full rounded-md border px-3 py-2 text-sm"
+                onClick={() => setCreatingLabel(true)}
+              >
+                + Ny etikett
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-2 grid grid-cols-2 gap-2">
+            <label className="block text-sm">
+              Ny etikett
+              <input
+                className="mt-1 w-full rounded-md border px-3 py-2"
+                value={newLabel.name}
+                onChange={(e) => setNewLabel({ ...newLabel, name: e.target.value })}
+                placeholder="t.ex. Projekt X"
+              />
+            </label>
+            <label className="block text-sm">
+              Färg
+              <input
+                type="color"
+                className="mt-1 h-10 w-full rounded-md border"
+                value={newLabel.color}
+                onChange={(e) => setNewLabel({ ...newLabel, color: e.target.value })}
+              />
+            </label>
+            <div className="col-span-2 flex justify-end gap-2">
+              <button type="button" className="rounded-md border px-3 py-2 text-sm" onClick={() => setCreatingLabel(false)}>
+                Avbryt
+              </button>
+              <button type="button" className="rounded-md border bg-indigo-500 px-3 py-2 text-sm text-white" onClick={createInlineLabel}>
+                Spara etikett
+              </button>
+            </div>
+          </div>
+        )}
+
         <label className="mb-3 block text-sm">
           Anteckningar
           <textarea
@@ -184,25 +223,15 @@ export default function EventModal({ open, onClose, editEvent = null }) {
             <button
               type="button"
               className="rounded-md border border-red-500 px-3 py-2 text-sm text-red-600"
-              onClick={handleDelete}
+              onClick={() => { deleteEvent(editEvent.id); onClose(); }}
             >
               Ta bort
             </button>
           ) : <span />}
+
           <div className="flex gap-2">
-            <button
-              type="button"
-              className="rounded-md border px-3 py-2 text-sm"
-              onClick={onClose}
-            >
-              Avbryt
-            </button>
-            <button
-              type="submit"
-              className="rounded-md border bg-indigo-500 px-3 py-2 text-sm text-white"
-            >
-              Spara
-            </button>
+            <button type="button" className="rounded-md border px-3 py-2 text-sm" onClick={onClose}>Avbryt</button>
+            <button type="submit" className="rounded-md border bg-indigo-500 px-3 py-2 text-sm text-white">Spara</button>
           </div>
         </div>
       </form>
