@@ -18,6 +18,7 @@ import { sv } from "date-fns/locale";
 import { useCalendar } from "../context/CalendarContext";
 import { useEvents } from "../context/EventsContext";
 import { useLabels } from "../context/LabelsContext";
+import ViewToolbar from "./ViewToolbar";
 
 function overlapsDay(evt, day) {
   const s = parseISO(evt.start);
@@ -30,6 +31,7 @@ function overlapsDay(evt, day) {
 export default function MonthView() {
   const {
     viewCursor,
+    setViewCursor,
     selectedDate,
     setSelectedDate,
     showWeekNumbers,
@@ -42,20 +44,27 @@ export default function MonthView() {
   const monthEnd = endOfMonth(viewCursor);
   const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
-  const days = [];
-  let d = gridStart;
-  while (d <= gridEnd) {
-    days.push(d);
-    d = addDays(d, 1);
-  }
 
+  // bygg dag-grid
+  const days = [];
+  for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d);
+
+  // veckogrupper
   const weeks = [];
-  for (let i = 0; i < days.length; i += 7) {
-    weeks.push(days.slice(i, i + 7));
-  }
+  for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
 
   return (
     <div className="rounded-xl border overflow-hidden">
+      {/* Mobil: Idag + filter */}
+      <ViewToolbar
+        onToday={() => {
+          const t = new Date();
+          setSelectedDate(t);
+          setViewCursor(t);
+        }}
+      />
+
+      {/* Rubrikrad */}
       <div
         className={`grid ${
           showWeekNumbers
@@ -71,6 +80,7 @@ export default function MonthView() {
         ))}
       </div>
 
+      {/* Veckorader */}
       <div className="divide-y border-t text-sm">
         {weeks.map((week, wi) => {
           const weekNumber = getISOWeek(week[0]);
@@ -93,12 +103,14 @@ export default function MonthView() {
                 const inMonth = isSameMonth(day, monthStart);
                 const isToday = isSameDay(day, new Date());
 
+                // events för denna dag (respekterar filter)
                 const dayEvents = events.filter(
                   (e) =>
                     (!filterLabelId ? true : e.labelId === filterLabelId) &&
                     overlapsDay(e, day)
                 );
 
+                // unika etiketter → [name,color]
                 const labelSet = new Map();
                 dayEvents.forEach((e) => {
                   const lab = e.labelId ? mapById.get(e.labelId) : null;
@@ -118,6 +130,7 @@ export default function MonthView() {
                     }`}
                     onClick={() => setSelectedDate(day)}
                   >
+                    {/* Datum med highlight för idag / vald dag */}
                     <div className="mb-1 text-right text-xs">
                       <span
                         className={`inline-block rounded px-1 ${
@@ -132,6 +145,7 @@ export default function MonthView() {
                       </span>
                     </div>
 
+                    {/* Etikettprickar med tooltips */}
                     <div className="flex flex-wrap gap-1">
                       {labels.slice(0, 4).map(([name, color]) => (
                         <span
@@ -144,7 +158,10 @@ export default function MonthView() {
                       {labels.length > 4 && (
                         <span
                           className="text-[10px] text-gray-500"
-                          title={labels.slice(4).map(([name]) => name).join(", ")}
+                          title={labels
+                            .slice(4)
+                            .map(([name]) => name)
+                            .join(", ")}
                         >
                           +{labels.length - 4}
                         </span>
