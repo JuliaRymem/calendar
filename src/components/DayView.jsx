@@ -16,6 +16,7 @@ import {
   import { NowLine } from "./TimeGrid";
   import { useMemo, useRef, useState } from "react";
   import EventModal from "./EventModal";
+  import ViewToolbar from "./ViewToolbar";
   
   function overlapsDay(evt, day) {
     const s = parseISO(evt.start);
@@ -101,7 +102,6 @@ import {
       window.addEventListener("mouseup", up);
     }
   
-    // mdEvent var oanvänd tidigare – ta bort den ur signaturen
     function onResizeStart(ev, edge) {
       const rect = containerRef.current.getBoundingClientRect();
       const move = (mm) => {
@@ -144,6 +144,9 @@ import {
             Nästa →
           </button>
         </div>
+  
+        {/* Mobil verktygsrad: Idag + filter */}
+        <ViewToolbar onToday={() => setSelectedDate(new Date())} />
   
         {/* Heldag chips */}
         {allDay.length > 0 && (
