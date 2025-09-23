@@ -6,10 +6,11 @@ const CalendarContext = createContext(null);
 export function CalendarProvider({ children }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewCursor, setViewCursor] = useState(new Date());
-
-  // UI-inställningar
   const [showWeekNumbers, setShowWeekNumbers] = useState(true);
-  const [theme, setTheme] = useState("system"); // "light" | "dark" | "system"
+  const [theme, setTheme] = useState("system");
+
+  // NYTT: filter (label) – "Alla" innebär inget filter
+  const [filterLabel, setFilterLabel] = useState("Alla");
 
   const value = useMemo(
     () => ({
@@ -17,15 +18,12 @@ export function CalendarProvider({ children }) {
       viewCursor, setViewCursor,
       showWeekNumbers, setShowWeekNumbers,
       theme, setTheme,
+      filterLabel, setFilterLabel,
     }),
-    [selectedDate, viewCursor, showWeekNumbers, theme]
+    [selectedDate, viewCursor, showWeekNumbers, theme, filterLabel]
   );
 
-  return (
-    <CalendarContext.Provider value={value}>
-      {children}
-    </CalendarContext.Provider>
-  );
+  return <CalendarContext.Provider value={value}>{children}</CalendarContext.Provider>;
 }
 
 export function useCalendar() {
