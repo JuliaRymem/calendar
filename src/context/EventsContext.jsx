@@ -30,7 +30,12 @@ export function EventsProvider({ children }) {
   }, [events]);
 
   function addEvent(evt) {
-    const withId = { ...evt, id: evt.id || safeUUID() };
+    const withId = {
+      color: evt.color || "#6366f1", // indigo
+      label: evt.label || "Övrigt",
+      ...evt,
+      id: evt.id || safeUUID(),
+    };
     setEvents((prev) => [...prev, withId]);
     return withId.id;
   }
