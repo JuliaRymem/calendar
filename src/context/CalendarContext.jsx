@@ -9,8 +9,8 @@ export function CalendarProvider({ children }) {
   const [showWeekNumbers, setShowWeekNumbers] = useState(true);
   const [theme, setTheme] = useState("system");
 
-  // NYTT: filter (label) – "Alla" innebär inget filter
-  const [filterLabel, setFilterLabel] = useState("Alla");
+  // NYTT: filter på etikett (id). null = Alla.
+  const [filterLabelId, setFilterLabelId] = useState(null);
 
   const value = useMemo(
     () => ({
@@ -18,9 +18,9 @@ export function CalendarProvider({ children }) {
       viewCursor, setViewCursor,
       showWeekNumbers, setShowWeekNumbers,
       theme, setTheme,
-      filterLabel, setFilterLabel,
+      filterLabelId, setFilterLabelId,
     }),
-    [selectedDate, viewCursor, showWeekNumbers, theme, filterLabel]
+    [selectedDate, viewCursor, showWeekNumbers, theme, filterLabelId]
   );
 
   return <CalendarContext.Provider value={value}>{children}</CalendarContext.Provider>;
