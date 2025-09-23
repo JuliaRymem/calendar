@@ -17,52 +17,27 @@ export default function CalendarHeader() {
   const [manageOpen, setManageOpen] = useState(false);
 
   return (
-    <div className="mb-4 space-y-3">
-      {/* --- Månadstitel och navigation --- */}
-      <div className="flex items-center justify-between">
-        <div className="text-2xl font-semibold capitalize">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="text-2xl font-semibold capitalize tracking-tight">
           {fmtMonthTitle(viewCursor)}
         </div>
         <div className="flex gap-2">
-          <button
-            className="rounded-md border px-3 py-1 text-sm"
-            onClick={() => setViewCursor(addMonths(viewCursor, -1))}
-          >
-            ← Föregående
-          </button>
-          <button
-            className="rounded-md border px-3 py-1 text-sm"
-            onClick={() => setViewCursor(new Date())}
-          >
-            Idag
-          </button>
-          <button
-            className="rounded-md border px-3 py-1 text-sm"
-            onClick={() => setViewCursor(addMonths(viewCursor, 1))}
-          >
-            Nästa →
-          </button>
+          <button className="btn" onClick={() => setViewCursor(addMonths(viewCursor, -1))}>← Föregående</button>
+          <button className="btn btn-primary" onClick={() => setViewCursor(new Date())}>Idag</button>
+          <button className="btn" onClick={() => setViewCursor(addMonths(viewCursor, 1))}>Nästa →</button>
         </div>
       </div>
 
-      {/* --- Inställningar --- */}
-      <div className="flex flex-wrap items-center gap-4 text-sm">
-        <label className="inline-flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={showWeekNumbers}
-            onChange={(e) => setShowWeekNumbers(e.target.checked)}
-          />
-          Visa veckonummer
+      <div className="flex flex-wrap items-center gap-3 text-sm">
+        <label className="chip">
+          <input type="checkbox" className="mr-2" checked={showWeekNumbers} onChange={(e) => setShowWeekNumbers(e.target.checked)} />
+          Veckonummer
         </label>
 
         <div className="inline-flex items-center gap-2">
-          Tema:
-          <select
-            className="rounded-md border px-2 py-1"
-            value={theme}
-            onChange={(e) => setTheme(e.target.value)}
-          >
+          <span className="subtle">Tema</span>
+          <select className="select" value={theme} onChange={(e) => setTheme(e.target.value)}>
             <option value="system">System</option>
             <option value="light">Ljust</option>
             <option value="dark">Mörkt</option>
@@ -70,43 +45,32 @@ export default function CalendarHeader() {
         </div>
 
         <div className="inline-flex items-center gap-2">
-          <button
-            className="rounded-md border px-2 py-1"
-            onClick={() => setManageOpen(true)}
+          <span className="subtle">Filter</span>
+          <select
+            className="select"
+            value={filterLabelId ?? ""}
+            onChange={(e) => setFilterLabelId(e.target.value || null)}
           >
+            <option value="">Alla</option>
+            {labels.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+
+          <button className="btn" onClick={() => setManageOpen(true)}>
             Hantera etiketter
           </button>
         </div>
       </div>
 
-      {/* --- Snabbfilter med chips --- */}
-      <div className="flex flex-wrap items-center gap-2 pt-2">
-        <button
-          onClick={() => setFilterLabelId(null)}
-          className={`rounded-full border px-3 py-1 text-sm ${
-            filterLabelId === null
-              ? "bg-indigo-500 text-white"
-              : "bg-white dark:bg-zinc-900"
-          }`}
-        >
-          Alla
-        </button>
+      {/* Snabbchips med färgprick */}
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <button onClick={() => setFilterLabelId(null)} className={`chip ${filterLabelId === null ? "ring-2 ring-brand-500/30" : ""}`}>Alla</button>
         {labels.map((l) => (
           <button
             key={l.id}
-            onClick={() =>
-              setFilterLabelId(filterLabelId === l.id ? null : l.id)
-            }
-            className={`flex items-center gap-2 rounded-full border px-3 py-1 text-sm ${
-              filterLabelId === l.id
-                ? "ring-2 ring-indigo-500"
-                : "bg-white dark:bg-zinc-900"
-            }`}
+            onClick={() => setFilterLabelId(filterLabelId === l.id ? null : l.id)}
+            className={`chip ${filterLabelId === l.id ? "ring-2 ring-brand-500/30" : ""}`}
           >
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ background: l.color }}
-            />
+            <span className="h-2.5 w-2.5 rounded-full" style={{ background: l.color }} />
             {l.name}
           </button>
         ))}

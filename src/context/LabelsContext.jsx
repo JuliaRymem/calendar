@@ -27,7 +27,6 @@ export function LabelsProvider({ children }) {
         return Array.isArray(arr) && arr.length ? arr : DEFAULT_LABELS;
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.warn("Couldn't load labels from localStorage:", err);
     }
     return DEFAULT_LABELS;
@@ -37,7 +36,6 @@ export function LabelsProvider({ children }) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(labels));
     } catch (err) {
-      // eslint-disable-next-line no-console
       console.warn("Couldn't save labels to localStorage:", err);
     }
   }, [labels]);

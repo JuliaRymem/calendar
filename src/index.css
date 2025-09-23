@@ -1,11 +1,122 @@
 @import "tailwindcss";
 
-/* Extra: styr dark mode via systeminställning */
-:root {
-  color-scheme: light dark;
+/* ===== Bas & bakgrund (light mode, glassy) ===== */
+html, body, #root { height: 100%; }
+:root { color-scheme: light; }
+body {
+  background:
+    radial-gradient(700px 400px at 10% 0%, rgba(191,234,215,0.35), transparent),
+    radial-gradient(700px 400px at 100% 20%, rgba(207,225,255,0.35), transparent),
+    radial-gradient(900px 500px at 50% -10%, rgba(245,198,214,0.25), transparent),
+    #f7f7fb;
+  font-family: system-ui, sans-serif;
+  color: #111827; /* text-gray-900 */
+}
+::selection { background: rgba(127,144,245,.25); }
+
+/* scrollbar */
+* { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,.5) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: rgba(148,163,184,.45); border-radius: 9999px; }
+
+/* ===== Våra custom komponentklasser ===== */
+.glass-card {
+  border-radius: 1.6rem;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(31,41,55,0.08), 0 2px 8px rgba(31,41,55,0.05);
 }
 
-/* Exempel på egen utility */
-.calendar-cell {
-  @apply rounded-xl border p-2;
+.glass-plain {
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
 }
+
+.toolbar {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
+}
+
+/* knappar */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
+}
+.btn:hover { background: rgba(255,255,255,0.9); }
+.btn-primary {
+  background-image: linear-gradient(145deg, #9eaefc, #7f90f5 60%);
+  border: none;
+  color: white;
+}
+.btn-primary:hover { filter: brightness(1.05); }
+.btn-ghost { border: none; background: transparent; }
+.btn-danger { border: none; background: #ef4444; color: white; }
+
+/* inputs */
+.input, .select, .textarea {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.8);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  transition: box-shadow 0.2s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+}
+.input:focus, .select:focus, .textarea:focus {
+  box-shadow: 0 0 0 3px rgba(127,144,245,.3);
+}
+
+/* chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.7);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
+}
+
+.heading-hero { font-size: 1.875rem; font-weight: 600; letter-spacing: -0.015em; }
+.subtle { font-size: 0.875rem; color: #6b7280; }
+
+/* Event-pill */
+.event-pill {
+  border-radius: 1rem;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.75));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+.event-pill.hoverable:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+
+.hover-glow:hover { box-shadow: 0 0 0 3px rgba(230,195,90,0.2); }
+
+/* grid */
+.grid-line { border-bottom: 1px solid rgba(229,231,235,.7); }
+.col-border { border-left: 1px solid rgba(229,231,235,.7); }
+.sticky-head { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.8); backdrop-filter: blur(12px); }

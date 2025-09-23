@@ -1,45 +1,41 @@
-import { useState } from "react";
 import CalendarHeader from "./CalendarHeader";
 import MonthView from "./MonthView";
 import WeekView from "./WeekView";
 import DayView from "./DayView";
 import Agenda from "./Agenda";
+import { useState } from "react";
 
 export default function CalendarShell() {
-  const [view, setView] = useState("month"); // "month" | "week" | "day"
+  const [tab, setTab] = useState("month"); // month | week | day
 
   return (
-    <div className="mx-auto max-w-6xl p-4">
-      <CalendarHeader />
+    <div className="mx-auto max-w-6xl space-y-8 px-4 py-6">
+      {/* Hero / toppkort */}
+      <section className="glass-card p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+          <h1 className="heading-hero">Kalender</h1>
+          <div className="toolbar">
+            <button className={`btn btn-ghost ${tab === "month" ? "ring-2 ring-brand-500/30" : ""}`} onClick={() => setTab("month")}>Månad</button>
+            <button className={`btn btn-ghost ${tab === "week" ? "ring-2 ring-brand-500/30" : ""}`} onClick={() => setTab("week")}>Vecka</button>
+            <button className={`btn btn-ghost ${tab === "day" ? "ring-2 ring-brand-500/30" : ""}`} onClick={() => setTab("day")}>Dag</button>
+          </div>
+        </div>
+        <CalendarHeader />
+      </section>
 
-      {/* Välj vy */}
-      <div className="mb-4 flex gap-2">
-        <button
-          className={`rounded-md border px-3 py-1 text-sm ${view === "month" ? "bg-indigo-500 text-white" : ""}`}
-          onClick={() => setView("month")}
-        >
-          Månad
-        </button>
-        <button
-          className={`rounded-md border px-3 py-1 text-sm ${view === "week" ? "bg-indigo-500 text-white" : ""}`}
-          onClick={() => setView("week")}
-        >
-          Vecka
-        </button>
-        <button
-          className={`rounded-md border px-3 py-1 text-sm ${view === "day" ? "bg-indigo-500 text-white" : ""}`}
-          onClick={() => setView("day")}
-        >
-          Dag
-        </button>
-      </div>
+      {/* Content-grid */}
+      <section className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2 glass-card p-3">
+          {tab === "month" && <MonthView />}
+          {tab === "week" && <WeekView />}
+          {tab === "day" && <DayView />}
+        </div>
 
-      {/* Rendera vald vy */}
-      {view === "month" && <MonthView />}
-      {view === "week" && <WeekView />}
-      {view === "day" && <DayView />}
-
-      <Agenda />
+        <aside className="glass-card p-5">
+          <div className="subtle mb-3">Översikt</div>
+          <Agenda />
+        </aside>
+      </section>
     </div>
   );
 }
