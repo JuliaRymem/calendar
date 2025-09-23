@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Extra: styr dark mode via systeminställning */
+:root {
+  color-scheme: light dark;
+}
+
+/* Exempel på egen utility */
+.calendar-cell {
+  @apply rounded-xl border p-2;
+}
