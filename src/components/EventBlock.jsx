@@ -2,7 +2,10 @@ import { parseISO, format } from "date-fns";
 import { timeToTopPx, durationToHeightPx } from "../utils/layout";
 import { useState } from "react";
 
-export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragStart, onResizeStart }) {
+export default function EventBlock({
+  event, lane = 0, lanes = 1,
+  onEdit, onDragStart, onResizeStart,
+}) {
   const start = parseISO(event.start);
   const end = parseISO(event.end);
   const top = timeToTopPx(start);
@@ -11,6 +14,7 @@ export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragS
   const leftPercent = lane * widthPercent;
 
   const [hover, setHover] = useState(false);
+  const tint = event.color || "#7f90f5";
 
   return (
     <div
@@ -20,10 +24,12 @@ export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragS
         height,
         left: `${leftPercent}%`,
         width: `calc(${widthPercent}% - 8px)`,
-        borderColor: `${event.color}40`,
-        background: `linear-gradient(180deg, ${event.color}1f, rgba(255,255,255,.85))`,
-        boxShadow: hover ? "0 10px 28px rgba(0,0,0,.12)" : "0 6px 18px rgba(0,0,0,.08)",
         pointerEvents: "auto",
+        borderImageSlice: 1,
+        borderWidth: "1px",
+        borderStyle: "solid",
+        borderImageSource: `linear-gradient(145deg, ${tint}55, #e6c35a55)`,
+        background: `linear-gradient(180deg, ${tint}15, rgba(255,255,255,.88))`,
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -34,7 +40,7 @@ export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragS
         className="w-full px-3 py-1.5 text-left focus:outline-none"
       >
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: event.color }} />
+          <span className="h-2.5 w-2.5 rounded-full" style={{ background: tint }} />
           <div className="text-xs font-medium leading-tight line-clamp-1">{event.title}</div>
         </div>
         {!event.allDay && (
@@ -45,11 +51,14 @@ export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragS
         {event.notes && <div className="mt-1 text-[10px] text-gray-600 line-clamp-2">{event.notes}</div>}
       </button>
 
-      {/* drag-ytan */}
+      {/* dra hela blocket */}
       {hover && (
-        <div className="absolute inset-0 cursor-move rounded-2xl" onMouseDown={(e) => { e.preventDefault(); onDragStart?.(event, e); }} />
+        <div
+          className="absolute inset-0 cursor-move rounded-2xl"
+          onMouseDown={(e) => { e.preventDefault(); onDragStart?.(event, e); }}
+        />
       )}
-      {/* resize-handles (små transparenta “flärpar”) */}
+      {/* resize-handles */}
       <div
         className="absolute -top-1 left-1/2 h-2 w-8 -translate-x-1/2 cursor-n-resize rounded bg-white/60"
         onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); onResizeStart?.(event, "start", e); }}
