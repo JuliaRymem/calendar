@@ -1,19 +1,20 @@
 import { addMonths } from "date-fns";
 import { fmtMonthTitle } from "../utils/date";
 import { useCalendar } from "../context/CalendarContext";
-import { useEvents } from "../context/EventsContext";
+import { useLabels } from "../context/LabelsContext";
+import { useState } from "react";
+import LabelManager from "./LabelManager";
 
 export default function CalendarHeader() {
   const {
     viewCursor, setViewCursor,
     showWeekNumbers, setShowWeekNumbers,
     theme, setTheme,
-    filterLabel, setFilterLabel,
+    filterLabelId, setFilterLabelId,
   } = useCalendar();
-  const { events } = useEvents();
+  const { labels } = useLabels();
 
-  const labels = Array.from(new Set(events.map(e => e.label))).sort();
-  const filterOptions = ["Alla", ...labels];
+  const [manageOpen, setManageOpen] = useState(false);
 
   return (
     <div className="mb-4 space-y-3">
@@ -45,11 +46,23 @@ export default function CalendarHeader() {
 
         <div className="inline-flex items-center gap-2">
           Filter:
-          <select className="rounded-md border px-2 py-1" value={filterLabel} onChange={(e) => setFilterLabel(e.target.value)}>
-            {filterOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          <select
+            className="rounded-md border px-2 py-1"
+            value={filterLabelId ?? ""}
+            onChange={(e) => setFilterLabelId(e.target.value || null)}
+          >
+            <option value="">Alla</option>
+            {labels.map((l) => (
+              <option key={l.id} value={l.id}>{l.name}</option>
+            ))}
           </select>
+          <button className="rounded-md border px-2 py-1" onClick={() => setManageOpen(true)}>
+            Hantera etiketter
+          </button>
         </div>
       </div>
+
+      <LabelManager open={manageOpen} onClose={() => setManageOpen(false)} />
     </div>
   );
 }
