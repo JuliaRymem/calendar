@@ -1,12 +1,26 @@
 import { clsx } from "clsx";
 import { fmtDayNum, isOutsideMonth, isSelected, isTodayFn } from "../utils/date";
 import { useCalendar } from "../context/CalendarContext";
+import { useEvents } from "../context/EventsContext";
+import { endOfDay, startOfDay, parseISO, isBefore, isAfter } from "date-fns";
+
+function overlapsDay(evt, day) {
+  const s = parseISO(evt.start);
+  const e = parseISO(evt.end);
+  const from = startOfDay(day);
+  const to = endOfDay(day);
+  return isBefore(s, to) && isAfter(e, from);
+}
 
 export default function DayCell({ day, monthCursor }) {
   const { selectedDate, setSelectedDate } = useCalendar();
+  const { events } = useEvents();
+
   const outside = isOutsideMonth(day, monthCursor);
   const today = isTodayFn(day);
   const selected = isSelected(day, selectedDate);
+
+  const hasEvents = events.some((evt) => overlapsDay(evt, day));
 
   function handleKeyDown(e) {
     if (e.key === "Enter" || e.key === " ") {
@@ -36,13 +50,15 @@ export default function DayCell({ day, monthCursor }) {
         <span className={clsx("text-sm", outside && "line-through opacity-60")}>
           {fmtDayNum(day)}
         </span>
-        {today && (
-          <span className="inline-flex items-center justify-center rounded-full border px-2 text-[10px]">
-            Idag
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {hasEvents && <span className="h-2 w-2 rounded-full bg-indigo-500" aria-hidden="true" />}
+          {today && (
+            <span className="inline-flex items-center justify-center rounded-full border px-2 text-[10px]">
+              Idag
+            </span>
+          )}
+        </div>
       </div>
-      {/* plats för små event-taggar senare */}
     </button>
   );
 }
