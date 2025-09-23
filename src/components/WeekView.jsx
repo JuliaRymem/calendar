@@ -6,7 +6,7 @@ import { useEvents } from "../context/EventsContext";
 import TimeGrid, { NowLine } from "./TimeGrid";
 import EventBlock from "./EventBlock";
 import { HOUR_PX, yToDate, SNAP_MIN } from "../utils/layout";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import EventModal from "./EventModal";
 
 function overlapsDay(evt, day) {
@@ -17,6 +17,7 @@ function overlapsDay(evt, day) {
   return isBefore(s, to) && isAfter(e, from);
 }
 
+// enkel lane-layout för överlapp
 function layoutLanes(items) {
   const lanes = [];
   const placed = items.map((it) => ({ ...it, lane: 0, lanes: 1 }));
@@ -40,7 +41,7 @@ function layoutLanes(items) {
 }
 
 export default function WeekView() {
-  const { viewCursor, filterLabel } = useCalendar();
+  const { viewCursor, filterLabelId } = useCalendar();
   const { events, addEvent, updateEvent } = useEvents();
   const weekStart = startOfWeek(viewCursor, { weekStartsOn: 1, locale: sv });
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -48,14 +49,15 @@ export default function WeekView() {
   const [open, setOpen] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
 
-  // --- Skapa via drag ---
-  const containerRefs = useRef({}); // per dag: ref till kolumn
-  const [draft, setDraft] = useState(null); // {dayIndex, startISO, endISO, color, label}
+  // skapa via drag (per kolumn)
+  const containerRefs = useRef({});
+  const [draft, setDraft] = useState(null); // {dayIndex, start:Date, end:Date, color,label}
 
   function beginCreate(dayIndex, e) {
+    // ignorera om man klickar på ett block (de ligger i overlay med pointer-events none)
     const col = containerRefs.current[dayIndex];
     const rect = col.getBoundingClientRect();
-    const y = e.clientY - rect.top - 28; // minus headerhöjd i kolumnen
+    const y = e.clientY - rect.top - 28; // 28px: headerhöjd i kolumn
     const base = days[dayIndex];
     const start = yToDate(base, Math.max(0, Math.min(y, 24 * HOUR_PX)));
     setDraft({ dayIndex, start, end: new Date(start), color: "#6366f1", label: "Övrigt" });
@@ -77,40 +79,37 @@ export default function WeekView() {
     window.removeEventListener("mouseup", endCreate);
     setDraft((d) => {
       if (!d) return null;
-      let [start, end] = d.start <= d.end ? [d.start, d.end] : [d.end, d.start];
-      if (start.getTime() === end.getTime()) end = new Date(start.getTime() + SNAP_MIN * 60000);
-      addEvent({
-        title: "Ny händelse",
-        allDay: false,
-        start: start.toISOString(),
-        end: end.toISOString(),
-        color: d.color,
-        label: d.label,
-      });
+      let [s, e] = d.start <= d.end ? [d.start, d.end] : [d.end, d.start];
+      if (s.getTime() === e.getTime()) e = new Date(s.getTime() + SNAP_MIN * 60000);
+      addEvent({ title: "Ny händelse", allDay: false, start: s.toISOString(), end: e.toISOString(), color: d.color, label: d.label });
       return null;
     });
   }
 
-  // --- Drag/resize av befintliga ---
-  const dragState = useRef(null); // {id, type:'move'|'start'|'end', startY, baseStart, baseEnd, dayIndex}
+  // drag/resize av block
+  const dragState = useRef(null); // {id,type,startY,rectTop,baseStart,baseEnd,dayIndex}
 
-  function onBlockDragStart(event, e, dayIndex) {
+  function onBlockDragStart(event, mdEvent, dayIndex) {
     const col = containerRefs.current[dayIndex];
     const rect = col.getBoundingClientRect();
     dragState.current = {
-      id: event.id, type: "move", startY: e.clientY, rectTop: rect.top,
-      baseStart: new Date(event.start), baseEnd: new Date(event.end), dayIndex
+      id: event.id, type: "move", rectTop: rect.top,
+      startY: mdEvent.clientY,
+      baseStart: new Date(event.start), baseEnd: new Date(event.end),
+      dayIndex,
     };
     window.addEventListener("mousemove", onDragMove);
     window.addEventListener("mouseup", onDragEnd);
   }
 
-  function onBlockResizeStart(event, edge, e, dayIndex) {
+  function onBlockResizeStart(event, edge, mdEvent, dayIndex) {
     const col = containerRefs.current[dayIndex];
     const rect = col.getBoundingClientRect();
     dragState.current = {
-      id: event.id, type: edge, startY: e.clientY, rectTop: rect.top,
-      baseStart: new Date(event.start), baseEnd: new Date(event.end), dayIndex
+      id: event.id, type: edge, rectTop: rect.top,
+      startY: mdEvent.clientY,
+      baseStart: new Date(event.start), baseEnd: new Date(event.end),
+      dayIndex,
     };
     window.addEventListener("mousemove", onDragMove);
     window.addEventListener("mouseup", onDragEnd);
@@ -119,15 +118,17 @@ export default function WeekView() {
   function onDragMove(e) {
     const s = dragState.current;
     if (!s) return;
-    const dy = e.clientY - s.rectTop - 28; // relativ y i kolumnen
+    const dy = e.clientY - s.rectTop - 28;
     const base = days[s.dayIndex];
     const current = yToDate(base, Math.max(0, Math.min(dy, 24 * HOUR_PX)));
 
     if (s.type === "move") {
-      const deltaMin = (current - yToDate(base, s.startY - s.rectTop - 28)) / 60000;
-      const newStart = new Date(s.baseStart.getTime() + deltaMin * 60000);
-      const newEnd = new Date(s.baseEnd.getTime() + deltaMin * 60000);
-      updateEvent(s.id, { start: newStart.toISOString(), end: newEnd.toISOString() });
+      const start0 = yToDate(base, s.startY - s.rectTop - 28);
+      const deltaMin = (current - start0) / 60000;
+      updateEvent(s.id, {
+        start: new Date(s.baseStart.getTime() + deltaMin * 60000).toISOString(),
+        end: new Date(s.baseEnd.getTime() + deltaMin * 60000).toISOString(),
+      });
     } else if (s.type === "start") {
       if (current < s.baseEnd) updateEvent(s.id, { start: current.toISOString() });
     } else if (s.type === "end") {
@@ -146,7 +147,7 @@ export default function WeekView() {
       <TimeGrid />
 
       {days.map((day, idx) => {
-        const filtered = events.filter(e => filterLabel === "Alla" || e.label === filterLabel);
+        const filtered = events.filter((e) => (!filterLabelId ? true : e.labelId === filterLabelId));
         const allDay = filtered.filter((e) => e.allDay && overlapsDay(e, day));
         const timedRaw = filtered.filter((e) => !e.allDay && overlapsDay(e, day)).sort((a, b) => (a.start < b.start ? -1 : 1));
         const timed = layoutLanes(timedRaw);
@@ -188,26 +189,12 @@ export default function WeekView() {
                   onResizeStart={(ev, edge, mdEvent) => onBlockResizeStart(ev, edge, mdEvent, idx)}
                 />
               ))}
-
-              {/* Draft vid skapande */}
-              {draft && draft.dayIndex === idx && (
-                <div
-                  className="absolute left-1 right-1 rounded-md border border-dashed"
-                  style={{
-                    top: Math.min(yToDate(days[idx], 0), draft.start) && Math.min(
-                      (draft.start.getHours()*60+draft.start.getMinutes())/60*HOUR_PX,
-                      (draft.end.getHours()*60+draft.end.getMinutes())/60*HOUR_PX
-                    ),
-                  }}
-                />
-              )}
             </div>
           </div>
         );
       })}
 
       <NowLine />
-
       <EventModal open={open} onClose={() => setOpen(false)} editEvent={editEvent} />
     </div>
   );

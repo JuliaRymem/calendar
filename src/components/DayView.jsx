@@ -17,14 +17,14 @@ function overlapsDay(evt, day) {
 }
 
 export default function DayView() {
-  const { selectedDate, setSelectedDate, filterLabel } = useCalendar();
+  const { selectedDate, setSelectedDate, filterLabelId } = useCalendar();
   const { events, addEvent, updateEvent } = useEvents();
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const containerRef = useRef(null);
 
   const filtered = useMemo(
-    () => events.filter(e => filterLabel === "Alla" || e.label === filterLabel),
-    [events, filterLabel]
+    () => events.filter((e) => (!filterLabelId ? true : e.labelId === filterLabelId)),
+    [events, filterLabelId]
   );
   const allDay = useMemo(
     () => filtered.filter((e) => e.allDay && overlapsDay(e, selectedDate)),
@@ -38,11 +38,11 @@ export default function DayView() {
   const [open, setOpen] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
 
-  // create via drag
+  // skapa via drag
   function onBackgroundMouseDown(e) {
     const rect = containerRef.current.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const start = yToDate(selectedDate, Math.max(0, Math.min(y, 24 * HOUR_PX)));
+    const y0 = e.clientY - rect.top;
+    const start = yToDate(selectedDate, Math.max(0, Math.min(y0, 24 * HOUR_PX)));
     let end = new Date(start.getTime() + 30 * 60000);
     const move = (mm) => {
       const yy = mm.clientY - rect.top;
@@ -68,8 +68,11 @@ export default function DayView() {
     const move = (mm) => {
       const yy = mm.clientY - rect.top;
       const current = yToDate(selectedDate, Math.max(0, Math.min(yy, 24 * HOUR_PX)));
-      const delta = (current - yToDate(selectedDate, y0)) / 60000;
-      updateEvent(ev.id, { start: new Date(s0.getTime() + delta * 60000).toISOString(), end: new Date(e0.getTime() + delta * 60000).toISOString() });
+      const base = yToDate(selectedDate, y0);
+      const deltaMin = (current - base) / 60000;
+      const ns = new Date(s0.getTime() + deltaMin * 60000);
+      const ne = new Date(e0.getTime() + deltaMin * 60000);
+      updateEvent(ev.id, { start: ns.toISOString(), end: ne.toISOString() });
     };
     const up = () => {
       window.removeEventListener("mousemove", move);
@@ -119,7 +122,9 @@ export default function DayView() {
       <div className="relative" ref={containerRef} onMouseDown={onBackgroundMouseDown}>
         {hours.map((h) => (
           <div key={h} className="relative h-16 border-b border-gray-200 dark:border-zinc-800">
-            <div className="absolute left-2 top-0 text-xs text-gray-500 dark:text-gray-400">{String(h).padStart(2, "0")}:00</div>
+            <div className="absolute left-2 top-0 text-xs text-gray-500 dark:text-gray-400">
+              {String(h).padStart(2, "0")}:00
+            </div>
           </div>
         ))}
 

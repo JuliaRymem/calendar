@@ -20,14 +20,13 @@ export default function EventBlock({ event, lane = 0, lanes = 1, onEdit, onDragS
         height,
         left: `${leftPercent}%`,
         width: `calc(${widthPercent}% - 4px)`,
-        background: `${event.color}1f`,      // ~12% alpha
-        borderColor: `${event.color}59`,     // ~35% alpha
+        background: `${event.color}1f`,   // ~12% alpha
+        borderColor: `${event.color}59`,  // ~35% alpha
         pointerEvents: "auto",
       }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      {/* innehåll */}
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); onEdit?.(event); }}

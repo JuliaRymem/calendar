@@ -24,7 +24,6 @@ export function LabelsProvider({ children }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const arr = JSON.parse(raw);
-        // Om tomt → seed med defaults
         return Array.isArray(arr) && arr.length ? arr : DEFAULT_LABELS;
       }
     } catch {}

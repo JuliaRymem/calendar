@@ -64,7 +64,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
       end: form.allDay ? toISO(form.date, "23:59") : toISO(form.date, form.endTime || "10:00"),
       notes: form.notes.trim(),
       labelId: labelObj?.id ?? null,
-      // fallback för äldre renderingar:
+      // fallbacks för vyer som läser legacy-fält
       label: labelObj?.name ?? "Övrigt",
       color: labelObj?.color ?? "#6366f1",
     };
@@ -151,7 +151,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
           </div>
         )}
 
-        {/* Etikett-väljare */}
+        {/* Etikettväljare + inline-skapande */}
         {!creatingLabel ? (
           <div className="mb-2 grid grid-cols-2 gap-2">
             <label className="block text-sm">

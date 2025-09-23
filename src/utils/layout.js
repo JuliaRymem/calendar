@@ -1,5 +1,5 @@
-export const HOUR_PX = 64;           // px per timme
-export const SNAP_MIN = 30;          // 30 min-raster
+export const HOUR_PX = 64;      // px per timme
+export const SNAP_MIN = 30;     // 30 min raster
 
 export function minutesSinceMidnight(date) {
   return date.getHours() * 60 + date.getMinutes();
@@ -19,8 +19,8 @@ export function snapMinutes(mins, snap = SNAP_MIN) {
   return Math.round(mins / snap) * snap;
 }
 
+// yPx = avstånd från kolumnens topp (0..24*HOUR_PX) -> datum samma dag (snäppt)
 export function yToDate(baseDate, yPx) {
-  // yPx relativt kolumnens topp (0–24*HOUR_PX)
   const mins = (yPx / HOUR_PX) * 60;
   const snapped = snapMinutes(mins);
   const d = new Date(baseDate);

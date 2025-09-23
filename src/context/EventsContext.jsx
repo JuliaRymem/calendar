@@ -16,7 +16,6 @@ export function EventsProvider({ children }) {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      // sortera kronologiskt (start)
       return parsed.sort((a, b) =>
         isBefore(parseISO(a.start), parseISO(b.start)) ? -1 : 1
       );
@@ -31,8 +30,9 @@ export function EventsProvider({ children }) {
 
   function addEvent(evt) {
     const withId = {
-      color: evt.color || "#6366f1", // indigo
+      color: evt.color || "#6366f1",
       label: evt.label || "Övrigt",
+      labelId: evt.labelId ?? null,
       ...evt,
       id: evt.id || safeUUID(),
     };
@@ -41,9 +41,7 @@ export function EventsProvider({ children }) {
   }
 
   function updateEvent(id, patch) {
-    setEvents((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, ...patch } : e))
-    );
+    setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...patch } : e)));
   }
 
   function deleteEvent(id) {
@@ -55,9 +53,7 @@ export function EventsProvider({ children }) {
     [events]
   );
 
-  return (
-    <EventsContext.Provider value={value}>{children}</EventsContext.Provider>
-  );
+  return <EventsContext.Provider value={value}>{children}</EventsContext.Provider>;
 }
 
 export function useEvents() {

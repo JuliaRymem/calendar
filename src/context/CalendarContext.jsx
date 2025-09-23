@@ -9,7 +9,7 @@ export function CalendarProvider({ children }) {
   const [showWeekNumbers, setShowWeekNumbers] = useState(true);
   const [theme, setTheme] = useState("system");
 
-  // NYTT: filter på etikett (id). null = Alla.
+  // filter på etikett (id). null = Alla.
   const [filterLabelId, setFilterLabelId] = useState(null);
 
   const value = useMemo(

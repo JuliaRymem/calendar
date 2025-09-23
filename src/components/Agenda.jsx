@@ -10,6 +10,7 @@ import {
 import { sv } from "date-fns/locale";
 import { useCalendar } from "../context/CalendarContext";
 import { useEvents } from "../context/EventsContext";
+import { useLabels } from "../context/LabelsContext";
 import EventModal from "./EventModal";
 
 function overlapsDay(evt, day) {
@@ -21,8 +22,9 @@ function overlapsDay(evt, day) {
 }
 
 export default function Agenda() {
-  const { selectedDate, filterLabel } = useCalendar();
+  const { selectedDate, filterLabelId } = useCalendar();
   const { events } = useEvents();
+  const { mapById } = useLabels();
 
   const [open, setOpen] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
@@ -30,15 +32,11 @@ export default function Agenda() {
   const labelDate = format(selectedDate, "EEEE d LLLL yyyy", { locale: sv });
 
   const visibleEvents = useMemo(() => {
-    const filtered =
-      filterLabel === "Alla"
-        ? events
-        : events.filter((e) => e.label === filterLabel);
-
-    return filtered
+    return events
+      .filter((e) => (!filterLabelId ? true : e.labelId === filterLabelId))
       .filter((e) => overlapsDay(e, selectedDate))
       .sort((a, b) => (a.start < b.start ? -1 : 1));
-  }, [events, selectedDate, filterLabel]);
+  }, [events, selectedDate, filterLabelId]);
 
   return (
     <div className="mt-6 rounded-xl border bg-white p-4 dark:bg-zinc-900">
@@ -49,10 +47,7 @@ export default function Agenda() {
         </div>
         <button
           className="rounded-md border px-3 py-1 text-sm"
-          onClick={() => {
-            setEditEvent(null);
-            setOpen(true);
-          }}
+          onClick={() => { setEditEvent(null); setOpen(true); }}
         >
           Ny händelse
         </button>
@@ -69,42 +64,31 @@ export default function Agenda() {
       ) : (
         <ul className="space-y-2">
           {visibleEvents.map((e) => {
+            const lab = e.labelId ? mapById.get(e.labelId) : null;
+            const color = lab?.color ?? e.color;
+            const labelName = lab?.name ?? e.label ?? "Övrigt";
             const start = parseISO(e.start);
             const end = parseISO(e.end);
             return (
               <li key={e.id}>
                 <button
                   className="w-full rounded-lg border px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-zinc-800/60"
-                  onClick={() => {
-                    setEditEvent(e);
-                    setOpen(true);
-                  }}
+                  onClick={() => { setEditEvent(e); setOpen(true); }}
                   title="Klicka för att redigera"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <span
-                        className="inline-block h-2.5 w-2.5 rounded-full"
-                        style={{ background: e.color }}
-                        aria-hidden="true"
-                      />
+                      <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: color }} />
                       <div className="font-medium">{e.title}</div>
-                      <span
-                        className="rounded-full border px-1.5 text-[10px]"
-                        style={{ borderColor: `${e.color}66` }}
-                      >
-                        {e.label || "Övrigt"}
+                      <span className="rounded-full border px-1.5 text-[10px]" style={{ borderColor: `${color}66` }}>
+                        {labelName}
                       </span>
                     </div>
                     <div className="shrink-0 text-xs text-gray-500">
-                      {e.allDay
-                        ? "Heldag"
-                        : `${format(start, "HH:mm")}–${format(end, "HH:mm")}`}
+                      {e.allDay ? "Heldag" : `${format(start, "HH:mm")}–${format(end, "HH:mm")}`}
                     </div>
                   </div>
-                  {e.notes && (
-                    <div className="mt-1 text-xs text-gray-500">{e.notes}</div>
-                  )}
+                  {e.notes && <div className="mt-1 text-xs text-gray-500">{e.notes}</div>}
                 </button>
               </li>
             );
@@ -112,12 +96,7 @@ export default function Agenda() {
         </ul>
       )}
 
-      {/* Modal för skapa/redigera */}
-      <EventModal
-        open={open}
-        onClose={() => setOpen(false)}
-        editEvent={editEvent}
-      />
+      <EventModal open={open} onClose={() => setOpen(false)} editEvent={editEvent} />
     </div>
   );
 }
