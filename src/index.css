@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ===== Bas & bakgrund (light mode, glassy) ===== */
+/* ===== Bas ===== */
 html, body, #root { height: 100%; }
 :root { color-scheme: light; }
 body {
@@ -10,7 +10,7 @@ body {
     radial-gradient(900px 500px at 50% -10%, rgba(245,198,214,0.25), transparent),
     #f7f7fb;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
-  color: #111827; /* text-gray-900 */
+  color: #111827;
 }
 ::selection { background: rgba(127,144,245,.25); }
 
@@ -19,7 +19,7 @@ body {
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb { background: rgba(148,163,184,.45); border-radius: 9999px; }
 
-/* ===== Våra komponentklasser (glassy) ===== */
+/* ===== Glassy komponenter ===== */
 .glass-card {
   border-radius: 1.6rem;
   border: 1px solid rgba(255,255,255,0.6);
@@ -34,7 +34,6 @@ body {
   backdrop-filter: blur(18px);
   box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
 }
-
 .toolbar {
   display: flex; gap: .5rem; padding: .5rem;
   border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.6);
@@ -45,16 +44,13 @@ body {
 /* knappar */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  border-radius: 1rem; padding: .5rem 1rem; font-size: .875rem; font-weight: 500;
+  border-radius: 1rem; padding: .6rem 1rem; font-size: .95rem; font-weight: 600;
   border: 1px solid rgba(255,255,255,0.7); background: rgba(255,255,255,0.75);
   backdrop-filter: blur(18px); transition: all .2s;
   box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
 }
 .btn:hover { background: rgba(255,255,255,0.92); }
-.btn-primary {
-  background-image: linear-gradient(145deg, #a6b3ff, #7f90f5 60%);
-  border: none; color: white;
-}
+.btn-primary { background-image: linear-gradient(145deg, #a6b3ff, #7f90f5 60%); border: none; color: white; }
 .btn-primary:hover { filter: brightness(1.05); }
 .btn-ghost { border: none; background: transparent; }
 .btn-danger { border: none; background: #ef4444; color: white; }
@@ -62,7 +58,7 @@ body {
 /* inputs */
 .input, .select, .textarea {
   width: 100%; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.85); padding: .5rem .75rem; font-size: .875rem;
+  background: rgba(255,255,255,0.85); padding: .6rem .8rem; font-size: .95rem;
   outline: none; transition: box-shadow .2s; box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
 }
 .input:focus, .select:focus, .textarea:focus { box-shadow: 0 0 0 3px rgba(127,144,245,.3); }
@@ -71,27 +67,22 @@ body {
 .chip {
   display: inline-flex; align-items: center; gap: .5rem;
   border-radius: 9999px; border: 1px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.75); padding: .25rem .75rem; font-size: .75rem;
+  background: rgba(255,255,255,0.75); padding: .35rem .75rem; font-size: .8rem;
   box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.06);
 }
 
-.heading-hero { font-size: 1.875rem; font-weight: 600; letter-spacing: -0.015em; }
-.subtle { font-size: .875rem; color: #6b7280; }
+/* rubriker */
+.heading-hero { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+.subtle { font-size: .9rem; color: #6b7280; }
 
-/* ===== Premium-detaljer ===== */
-/* Gradient-ram (för “vald dag”) */
+/* Premium-detaljer */
 .g-border {
-  position: relative;
-  border-radius: .6rem;
+  position: relative; border-radius: .6rem;
   background: linear-gradient(#fff,#fff) padding-box,
               linear-gradient(145deg,#e6c35a,#a6b3ff 70%,#bfead7) border-box;
   border: 2px solid transparent;
 }
-
-/* Mjuk “aura” kring Idag */
-.today-ring {
-  position: relative; isolation: isolate;
-}
+.today-ring { position: relative; isolation: isolate; }
 .today-ring::after{
   content:""; position:absolute; inset:-6px; border-radius: .7rem;
   background: radial-gradient(200px 60px at 80% 0%, rgba(230,195,90,.20), transparent 60%),
@@ -99,37 +90,51 @@ body {
   z-index:-1; pointer-events:none; filter: blur(6px);
 }
 
-/* Kalendercell (månad) */
+/* Månadscell */
 .day-cell {
   border-right: 1px solid rgba(229,231,235,.7);
-  min-height: 6rem; padding: .25rem; position: relative;
+  min-height: 6rem; padding: .28rem; position: relative;
   transition: transform .1s ease, box-shadow .2s ease, background .2s ease;
 }
-.day-cell:hover {
-  background: rgba(255,255,255,.75);
-  box-shadow: 0 8px 24px rgba(0,0,0,.06);
-  transform: translateY(-1px);
-}
+.day-cell:hover { background: rgba(255,255,255,.75); box-shadow: 0 8px 24px rgba(0,0,0,.06); transform: translateY(-1px); }
 
 /* Datum-badge */
-.day-number {
-  display:inline-block; padding: 2px 6px; border-radius: .4rem; font-size: .75rem;
-}
+.day-number { display:inline-block; padding: 2px 7px; border-radius: .45rem; font-size: .78rem; }
 .day-number--today { color: white; background: #ef4444; }
 .day-number--selected { color:white; background:#7f90f5; }
 
-/* Event-pill i raster */
+/* Event-pill */
 .event-pill {
   border-radius: 1rem; border: 1px solid rgba(0,0,0,0.06);
   background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.78));
   box-shadow: 0 6px 18px rgba(0,0,0,0.08);
 }
 .event-pill.hoverable:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
-
-/* ring vid hover */
 .hover-glow:hover { box-shadow: 0 0 0 3px rgba(230,195,90,0.20); }
 
-/* Gridlinjer (vecka/dag) */
+/* Raster */
 .grid-line { border-bottom: 1px solid rgba(229,231,235,.7); }
 .col-border { border-left: 1px solid rgba(229,231,235,.7); }
 .sticky-head { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.82); backdrop-filter: blur(12px); }
+
+/* ===== Modal-panel för små skärmar ===== */
+.modal-panel { width: 100%; max-width: 44rem; max-height: 85vh; overflow: auto; }
+@media (max-width: 640px) {
+  .modal-panel { max-width: 95vw; border-radius: 1rem; padding: 16px !important; }
+}
+
+/* ===== MOBIL-ANPASSNINGAR ===== */
+@media (max-width: 640px) {
+  .heading-hero { font-size: 1.4rem; }
+  .toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .chip-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: .25rem; }
+  .chip-row::-webkit-scrollbar { display: none; }
+
+  .day-cell { min-height: 4.5rem; }
+  .btn { padding: .55rem .9rem; font-size: .9rem; }
+  .input, .select, .textarea { font-size: .9rem; padding: .5rem .7rem; }
+
+  /* agenda-kort spacing */
+  .glass-card, .glass-plain { border-radius: 1rem; }
+}

@@ -26,8 +26,7 @@ export default function LabelManager({ open, onClose }) {
   }
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+    <div className="modal-panel glass-card p-5"
       role="dialog"
       aria-modal="true"
       aria-labelledby="labels-modal-title"

@@ -103,7 +103,7 @@ export default function EventModal({ open, onClose, editEvent = null }) {
         backdropFilter: "blur(2px)",
       }}
     >
-      <form onSubmit={handleSubmit} className="glass-card w-full max-w-xl p-5 max-h-[85vh] overflow-auto">
+      <form onSubmit={handleSubmit} className="modal-panel glass-card p-5 max-h-[85vh] overflow-auto">
         <div className="mb-3 flex items-center justify-between">
           <h2 id="event-modal-title" className="text-lg font-semibold tracking-tight">
             {editEvent ? "Redigera händelse" : "Ny händelse"}
