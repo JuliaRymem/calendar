@@ -1,7 +1,7 @@
 # ✨ Premium Kalender App
 
-En modern och lyxig kalender byggd med **React + Vite + Tailwind CSS**.
-En kalender med månad-, vecka- och dagvyer, där du enkelt kan skapa, flytta och justera händelser. Etiketter, filter och en glassig premiumdesign gör planeringen både snygg och smidig.
+En modern kalender byggd med **React + Vite + Tailwind CSS**.
+En kalender med månad-, vecka- och dagvyer, där man enkelt kan skapa, flytta och justera händelser.
 
 ---
 
@@ -30,6 +30,6 @@ En kalender med månad-, vecka- och dagvyer, där du enkelt kan skapa, flytta oc
 
 ## Licens & attribution
 
-Byggd av **@Julia Rymem**
+Byggd av **@JuliaRymem**
 
 ![1758689574855](image/README/1758689574855.png)
