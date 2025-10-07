@@ -22,9 +22,9 @@ En kalender med månad-, vecka- och dagvyer, där man enkelt kan skapa, flytta o
 
 - **React 18**
 - **Vite**
-- **Tailwind CSS (v4, glassy styling)**
+- **Tailwind CSS**
 - **date-fns** för datumlogik
-- **localStorage** för lagring (kan senare bytas mot backend)
+- **localStorage** för lagring
 
 ---
 
